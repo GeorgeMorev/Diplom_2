@@ -75,29 +75,21 @@ def create_user():
 @pytest.fixture
 @allure.step("Авторизация пользователя")
 def login_user(create_user):
-    """Авторизует пользователя через API."""
+    """Авторизует пользователя через API и возвращает ответ."""
     login_data = {
         'email': create_user['email'],
         'password': create_user['password']
     }
 
-    response = requests.post(APIUrls.USER_LOGIN, json=login_data)
+    response = requests.post(APIUrls.LOGIN, json=login_data)
 
     # Проверка успешности запроса
     assert response.status_code == 200, f"Ошибка при авторизации: {response.text}"
 
-    # Логируем ответ и токен
+    # Логируем ответ
     allure.attach(f"Response: {response.text}", name="Ответ API", attachment_type=allure.attachment_type.JSON)
 
-    token = response.json().get('token')
-    return token
-
-
-@pytest.fixture(scope="function")
-@allure.step("Авторизация пользователя")
-def login(login_user):
-    """Фикстура для авторизации пользователя"""
-    return login_user  # Возвращаем токен, чтобы его можно было использовать в тестах
+    return response  # Возвращаем ответ целиком, чтобы использовать его в тестах
 
 
 @pytest.fixture(scope="function")
@@ -198,18 +190,6 @@ def create_order_without_ingredients():
 
 
 @pytest.fixture
-@allure.step("Логин пользователя через API")
-def login_user(create_user):
-    """Возвращает ответ на запрос логина зарегистрированного пользователя."""
-    login_data = {
-        "email": create_user["email"],
-        "password": create_user["password"]
-    }
-    response = requests.post(APIUrls.LOGIN, json=login_data)
-    return response
-
-
-@pytest.fixture
 @allure.step("Попытка создать заказ с невалидным хэшем ингредиента")
 def create_order_with_invalid_ingredient():
     """Отправляет запрос с несуществующим ингредиентом."""
@@ -245,18 +225,6 @@ def try_update_user_without_auth():
 
 
 @pytest.fixture
-@allure.step("Попытка изменить данные пользователя без авторизации")
-def try_update_user_without_auth():
-    """Фикстура для отправки запроса на изменение данных без авторизации."""
-
-    def _try_update_user_without_auth(new_data):
-        response = requests.patch(APIUrls.USER, json=new_data)
-        return response
-
-    return _try_update_user_without_auth
-
-
-@pytest.fixture
 @allure.step("Попытка создать второго пользователя с уже существующим логином")
 def create_duplicate_user(create_user):
     """Фикстура для создания второго пользователя с таким же логином."""
@@ -266,8 +234,22 @@ def create_duplicate_user(create_user):
 
 
 @pytest.fixture
-def user_data_with_missing_field(missing_field):
-    """Фикстура для создания данных пользователя с отсутствующим обязательным полем."""
-    user_data = UserDataGenerator.generate_user()
-    user_data.pop(missing_field)  # Удаляем обязательное поле
-    return user_data
+@allure.step("Получение заказов авторизованного пользователя")
+def get_user_orders(get_user_token):
+    """Получает заказы авторизованного пользователя."""
+    headers = {"Authorization": get_user_token}
+    response = requests.get(APIUrls.ORDERS, headers=headers)
+
+    # Проверка успешности запроса
+    assert response.status_code == 200, f"Ошибка при получении заказов: {response.text}"
+    return response
+
+
+@pytest.fixture
+@allure.step("Получение заказов неавторизованным пользователем")
+def get_orders_unauthorized():
+    """Получает заказы для неавторизованного пользователя."""
+    response = requests.get(APIUrls.ORDERS)  # Без заголовка авторизации
+    # Проверка, что неавторизованный запрос возвращает ошибку
+    assert response.status_code == 401, f"Ошибка при получении заказов: {response.text}"
+    return response
