@@ -1,7 +1,7 @@
 import pytest
 import allure
 import requests
-from config import APIUrls
+from config import APIUrls, TestData
 from faker import Faker
 from utils.data_generator import UserDataGenerator
 
@@ -169,3 +169,38 @@ def empty_order_data():
 @allure.step("Генерация заказа с невалидными ингредиентами")
 def invalid_order_data():
     return OrderDataGenerator.generate_order_with_invalid_ingredients()
+
+
+@pytest.fixture
+@allure.step("Создание заказа с авторизацией")
+def create_order_with_auth(valid_order_data, get_user_token):
+    """Отправка запроса на создание заказа с авторизацией."""
+    headers = {"Authorization": get_user_token}
+    response = requests.post(APIUrls.ORDERS, json=valid_order_data, headers=headers)
+    return response
+
+
+@pytest.fixture
+@allure.step("Создание заказа без авторизации")
+def create_order_without_auth(valid_order_data):
+    """Отправка запроса на создание заказа без авторизации."""
+    response = requests.post(APIUrls.ORDERS, json=valid_order_data)
+    return response
+
+
+@pytest.fixture
+@allure.step("Попытка создать заказ без ингредиентов")
+def create_order_without_ingredients():
+    """Отправляет запрос на создание заказа с пустым списком ингредиентов."""
+    empty_order_data = TestData.EMPTY_ORDER_DATA
+    response = requests.post(APIUrls.ORDERS, json=empty_order_data)
+    return response
+
+
+@pytest.fixture
+@allure.step("Попытка создать заказ с невалидным хэшем ингредиента")
+def create_order_with_invalid_ingredient():
+    """Отправляет запрос с несуществующим ингредиентом."""
+    invalid_ingredient_order = TestData.INVALID_INGREDIENT_ORDER
+    response = requests.post(APIUrls.ORDERS, json=invalid_ingredient_order)
+    return response

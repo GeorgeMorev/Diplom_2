@@ -17,3 +17,15 @@ class APIUrls:
     # Сброс пароля
     PASSWORD_RESET = f"{BASE_URL}/api/password-reset"  # POST - запрос на сброс пароля
     PASSWORD_RESET_RESET = f"{BASE_URL}/api/password-reset/reset"  # POST - установка нового пароля
+
+
+class TestData:
+    # Невалидный хэш ингредиента для тестов
+    INVALID_INGREDIENT_ORDER = {
+        "ingredients": ["invalid_hash_123"]
+    }
+
+    # Пустой заказ без ингредиентов
+    EMPTY_ORDER_DATA = {
+        "ingredients": []
+    }
