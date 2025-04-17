@@ -1,0 +1,1 @@
+Response: {"success":true,"user":{"email":"bgriffin@example.com","name":"Billy"},"accessToken":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MDE3MWE0OWVkMjgwMDAxYjVjYWNiMCIsImlhdCI6MTc0NDkyNTA5MiwiZXhwIjoxNzQ0OTI2MjkyfQ.hslcFxH6qpW63VuRxGR1rXxdFiCvwndi3BHDjfgr140","refreshToken":"ef8c3e7452d7685ff478caa71c199c081e36770878bea3dd87a13edfcdd66860ddc4d39527f9ab46"}
