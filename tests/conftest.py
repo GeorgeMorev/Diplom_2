@@ -8,6 +8,31 @@ from utils.data_generator import UserDataGenerator
 fake = Faker()
 
 
+class OrderDataGenerator:
+    @staticmethod
+    def generate_valid_order():
+        """Возвращает словарь с валидными id ингредиентов."""
+        with allure.step("Получение валидных ингредиентов из API"):
+            response = requests.get(APIUrls.INGREDIENTS)
+            assert response.status_code == 200, f"Ошибка получения ингредиентов: {response.text}"
+            ingredients = response.json().get("data")
+            assert ingredients, "Нет ингредиентов в ответе API"
+
+            # Берём первые три ингредиента для заказа
+            ingredient_ids = [item["_id"] for item in ingredients[:3]]
+            return {"ingredients": ingredient_ids}
+
+    @staticmethod
+    def generate_order_with_invalid_ingredients():
+        """Возвращает заказ с несуществующими id ингредиентов."""
+        return {"ingredients": ["invalid1", "invalid2"]}
+
+    @staticmethod
+    def generate_order_without_ingredients():
+        """Возвращает заказ без ингредиентов."""
+        return {"ingredients": []}
+
+
 @pytest.fixture
 @allure.step("Получение токена авторизованного пользователя")
 def get_user_token():
@@ -126,3 +151,21 @@ def get_order_by_id():
     allure.attach(f"Response: {response.text}", name="Ответ API", attachment_type=allure.attachment_type.JSON)
 
     return response.json()
+
+
+@pytest.fixture
+@allure.step("Генерация валидного заказа")
+def valid_order_data():
+    return OrderDataGenerator.generate_valid_order()
+
+
+@pytest.fixture
+@allure.step("Генерация заказа без ингредиентов")
+def empty_order_data():
+    return OrderDataGenerator.generate_order_without_ingredients()
+
+
+@pytest.fixture
+@allure.step("Генерация заказа с невалидными ингредиентами")
+def invalid_order_data():
+    return OrderDataGenerator.generate_order_with_invalid_ingredients()
