@@ -9,6 +9,26 @@ fake = Faker()
 
 
 @pytest.fixture
+@allure.step("Получение токена авторизованного пользователя")
+def get_user_token():
+    """Создаёт пользователя и возвращает его токен"""
+    user_data = UserDataGenerator.generate_user()
+    # Регистрируем пользователя
+    response = requests.post(APIUrls.REGISTER, json=user_data)
+    assert response.status_code == 200, f"Ошибка при регистрации: {response.text}"
+
+    # Получаем токен
+    login_response = requests.post(APIUrls.LOGIN, json={
+        "email": user_data["email"],
+        "password": user_data["password"]
+    })
+    assert login_response.status_code == 200, f"Ошибка при логине: {login_response.text}"
+    token = login_response.json().get("accessToken")
+    assert token, "Токен не найден в ответе"
+    return token
+
+
+@pytest.fixture
 @allure.step("Создание нового пользователя")
 def create_user():
     """Создает нового пользователя с уникальными данными через API."""
