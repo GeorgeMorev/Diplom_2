@@ -198,6 +198,18 @@ def create_order_without_ingredients():
 
 
 @pytest.fixture
+@allure.step("Логин пользователя через API")
+def login_user(create_user):
+    """Возвращает ответ на запрос логина зарегистрированного пользователя."""
+    login_data = {
+        "email": create_user["email"],
+        "password": create_user["password"]
+    }
+    response = requests.post(APIUrls.LOGIN, json=login_data)
+    return response
+
+
+@pytest.fixture
 @allure.step("Попытка создать заказ с невалидным хэшем ингредиента")
 def create_order_with_invalid_ingredient():
     """Отправляет запрос с несуществующим ингредиентом."""

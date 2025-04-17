@@ -9,20 +9,12 @@ from config import APIUrls
 @allure.story("Логин")
 @allure.title("Успешный логин существующего пользователя")
 @allure.description("Этот тест проверяет, что пользователь может залогиниться с корректными данными.")
-def test_successful_login(create_user):
-    login_data = {
-        "email": create_user["email"],
-        "password": create_user["password"]
-    }
-
-    with allure.step("Отправка запроса на логин"):
-        response = requests.post(APIUrls.LOGIN, json=login_data)
-
+def test_successful_login(login_user):
     with allure.step("Проверка, что возвращается статус-код 200"):
-        assert response.status_code == 200, f"Ожидался 200, но получен {response.status_code} - {response.text}"
+        assert login_user.status_code == 200, f"Ожидался 200, но получен {login_user.status_code} - {login_user.text}"
 
     with allure.step("Проверка, что в ответе есть accessToken и user"):
-        response_json = response.json()
+        response_json = login_user.json()
         assert "accessToken" in response_json, "accessToken отсутствует в ответе"
         assert "user" in response_json, "user отсутствует в ответе"
 
