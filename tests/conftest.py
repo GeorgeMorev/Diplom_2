@@ -216,3 +216,29 @@ def create_order_with_invalid_ingredient():
     invalid_ingredient_order = TestData.INVALID_INGREDIENT_ORDER
     response = requests.post(APIUrls.ORDERS, json=invalid_ingredient_order)
     return response
+
+
+@pytest.fixture
+@allure.step("Изменение данных пользователя")
+def update_user_data(get_user_token):
+    """Фикстура для изменения данных пользователя"""
+
+    def _update_user_data(field, new_value):
+        headers = {"Authorization": get_user_token}
+        new_data = {field: new_value}
+        response = requests.patch(APIUrls.USER, headers=headers, json=new_data)
+        return response
+
+    return _update_user_data
+
+
+@pytest.fixture
+@allure.step("Попытка изменить данные пользователя без авторизации")
+def try_update_user_without_auth():
+    """Фикстура для попытки изменить данные без авторизации"""
+
+    def _try_update_user_without_auth(new_data):
+        response = requests.patch(APIUrls.USER, json=new_data)
+        return response
+
+    return _try_update_user_without_auth

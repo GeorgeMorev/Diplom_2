@@ -9,14 +9,11 @@ from utils.data_generator import UserDataGenerator
 @allure.story("Изменение данных пользователя")
 @allure.title("Изменение данных с авторизацией")
 @pytest.mark.parametrize("field", ["email", "name", "password"])
-def test_update_user_authorized(field, get_user_token):
+def test_update_user_authorized(field, get_user_token, update_user_data):
     """Проверяет изменение email, имени и пароля с авторизацией."""
 
     new_data = {field: UserDataGenerator.generate_user()[field]}
-    headers = {"Authorization": get_user_token}
-
-    with allure.step(f"Отправка запроса на изменение поля '{field}'"):
-        response = requests.patch(APIUrls.USER, headers=headers, json=new_data)
+    response = update_user_data(field, new_data[field])
 
     with allure.step("Проверка, что статус-код 200"):
         assert response.status_code == 200, f"Ожидался 200, но получен {response.status_code} - {response.text}"
@@ -31,13 +28,11 @@ def test_update_user_authorized(field, get_user_token):
 @allure.story("Изменение данных пользователя")
 @allure.title("Изменение данных без авторизации")
 @pytest.mark.parametrize("field", ["email", "name", "password"])
-def test_update_user_unauthorized(field):
+def test_update_user_unauthorized(field, try_update_user_without_auth):
     """Проверяет, что нельзя изменить данные пользователя без авторизации."""
 
     new_data = {field: UserDataGenerator.generate_user()[field]}
-
-    with allure.step(f"Попытка изменить поле '{field}' без авторизации"):
-        response = requests.patch(APIUrls.USER, json=new_data)
+    response = try_update_user_without_auth(new_data)
 
     with allure.step("Проверка, что возвращён статус-код 401"):
         assert response.status_code == 401, f"Ожидался 401, но получен {response.status_code} - {response.text}"
