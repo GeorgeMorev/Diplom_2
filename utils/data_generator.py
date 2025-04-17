@@ -1,3 +1,4 @@
+import allure
 from faker import Faker
 
 fake = Faker()
@@ -5,6 +6,7 @@ fake = Faker()
 
 class UserDataGenerator:
     @staticmethod
+    @allure.step("Генерация данных для пользователя")
     def generate_user():
         return {
             "email": fake.email(),
@@ -13,6 +15,7 @@ class UserDataGenerator:
         }
 
     @staticmethod
+    @allure.step("Генерация данных пользователя с отсутствующим полем")
     def generate_user_missing_field(field: str):
         user_data = UserDataGenerator.generate_user()
         user_data.pop(field, None)
