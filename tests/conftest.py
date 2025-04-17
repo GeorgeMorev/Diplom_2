@@ -242,3 +242,32 @@ def try_update_user_without_auth():
         return response
 
     return _try_update_user_without_auth
+
+
+@pytest.fixture
+@allure.step("Попытка изменить данные пользователя без авторизации")
+def try_update_user_without_auth():
+    """Фикстура для отправки запроса на изменение данных без авторизации."""
+
+    def _try_update_user_without_auth(new_data):
+        response = requests.patch(APIUrls.USER, json=new_data)
+        return response
+
+    return _try_update_user_without_auth
+
+
+@pytest.fixture
+@allure.step("Попытка создать второго пользователя с уже существующим логином")
+def create_duplicate_user(create_user):
+    """Фикстура для создания второго пользователя с таким же логином."""
+
+    response = requests.post(APIUrls.REGISTER, json=create_user)
+    return response
+
+
+@pytest.fixture
+def user_data_with_missing_field(missing_field):
+    """Фикстура для создания данных пользователя с отсутствующим обязательным полем."""
+    user_data = UserDataGenerator.generate_user()
+    user_data.pop(missing_field)  # Удаляем обязательное поле
+    return user_data

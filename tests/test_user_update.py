@@ -1,7 +1,5 @@
 import pytest
-import requests
 import allure
-from config import APIUrls
 from utils.data_generator import UserDataGenerator
 
 

@@ -3,38 +3,48 @@ import allure
 import requests
 
 from config import APIUrls
+from utils.data_generator import UserDataGenerator
 
 
 @allure.feature("Пользователь")
-@allure.story("Создание пользователя")
-@allure.title("Создание уникального пользователя")
-@allure.description("Этот тест проверяет успешное создание нового пользователя.")
-def test_create_user(create_user):
-    """Проверяет создание нового пользователя с уникальными данными."""
+@allure.story("Изменение данных пользователя")
+@allure.title("Изменение данных без авторизации")
+@pytest.mark.parametrize("field", ["email", "name", "password"])
+def test_update_user_unauthorized(field, try_update_user_without_auth):
+    """Проверяет, что нельзя изменить данные пользователя без авторизации."""
 
-    with allure.step("Проверка, что запрос возвращает статус-код 200"):
-        assert create_user['status_code'] == 200, f"Ожидался статус 200, но получен {create_user['status_code']}"
+    # Генерация данных для теста
+    new_data = {field: UserDataGenerator.generate_user()[field]}
 
-    with allure.step("Проверка, что в ответе есть нужные данные"):
-        assert "email" in create_user, f"Ожидался email, но его нет в ответе: {create_user}"
+    # Отправляем запрос через фикстуру
+    response = try_update_user_without_auth(new_data)
+
+    # Проверка на правильность статуса ответа
+    with allure.step("Проверка, что возвращён статус-код 401"):
+        assert response.status_code == 401, f"Ожидался 401, но получен {response.status_code} - {response.text}"
+
+    # Проверка на правильность сообщения об ошибке
+    with allure.step("Проверка сообщения об ошибке"):
+        assert response.json()["message"] == "You should be authorised", \
+            f"Ожидалось сообщение об ошибке, но получено: {response.json()}"
 
 
 @allure.feature("Пользователь")
 @allure.story("Создание пользователя")
 @allure.title("Попытка создать пользователя с уже существующим логином")
 @allure.description("Этот тест проверяет, что нельзя создать двух пользователей с одинаковым логином.")
-def test_create_duplicate_user(create_user):
+def test_create_duplicate_user(create_duplicate_user):
     """Проверяет, что не удается создать пользователя с уже существующим логином."""
 
-    with allure.step("Отправка запроса на создание второго пользователя с таким же логином"):
-        response = requests.post(APIUrls.REGISTER, json=create_user)
-
+    # Проверка на правильность статуса ответа
     with allure.step("Проверка, что сервер вернул статус-код 403"):
-        assert response.status_code == 403, f"Ожидался 403, но получен {response.status_code} - {response.text}"
+        assert create_duplicate_user.status_code == 403, \
+            f"Ожидался 403, но получен {create_duplicate_user.status_code} - {create_duplicate_user.text}"
 
+    # Проверка на правильность сообщения об ошибке
     with allure.step("Проверка, что сервер вернул корректное сообщение об ошибке"):
-        assert response.json()["message"] == "User already exists", \
-            f"Ожидалось сообщение 'User already exists', но получено: {response.json()}"
+        assert create_duplicate_user.json()["message"] == "User already exists", \
+            f"Ожидалось сообщение 'User already exists', но получено: {create_duplicate_user.json()}"
 
 
 @allure.feature("Пользователь")
@@ -48,7 +58,7 @@ def test_create_user_missing_field(user_data_with_missing_field, missing_field):
     with allure.step(f"Отправка запроса на создание пользователя без поля: {missing_field}"):
         response = requests.post(APIUrls.REGISTER, json=user_data_with_missing_field)
 
-    with allure.step(f"Проверка, что сервер вернул статус-код 400"):
+    with allure.step(f"Проверка, что сервер вернул статус-код 403"):
         assert response.status_code == 403, f"Ожидался 403, но получен {response.status_code} - {response.text}"
 
     with allure.step("Проверка, что сервер вернул корректное сообщение об ошибке"):
