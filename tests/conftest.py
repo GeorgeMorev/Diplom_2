@@ -15,10 +15,10 @@ def create_user():
     user_data = UserDataGenerator.generate_user()  # Генерация данных пользователя
 
     # Отправка запроса на создание пользователя
-    response = requests.post(APIUrls.USER_CREATE, json=user_data)
+    response = requests.post(APIUrls.REGISTER, json=user_data)
 
     # Проверка успешности запроса
-    assert response.status_code == 201, f"Ошибка при создании пользователя: {response.text}"
+    assert response.status_code == 200, f"Ошибка при создании пользователя: {response.text}"
 
     # Логируем ответ и ID пользователя
     allure.attach(f"Response: {response.text}", name="Ответ API", attachment_type=allure.attachment_type.JSON)
