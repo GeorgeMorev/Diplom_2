@@ -3,20 +3,28 @@ import allure
 import requests
 
 from config import APIUrls
+from utils.api_steps import login_user, register_user
 
 
 @allure.feature("Пользователь")
 @allure.story("Логин")
 @allure.title("Успешный логин существующего пользователя")
 @allure.description("Этот тест проверяет, что пользователь может залогиниться с корректными данными.")
-def test_successful_login(login_user):
+def test_successful_login(user_data):
+    with allure.step("Регистрация пользователя перед логином"):
+        register_response = register_user(user_data)
+        assert register_response["status_code"] == 200, \
+            f"Регистрация не удалась: {register_response}"
+
+    with allure.step("Отправка запроса на логин"):
+        response = login_user(user_data["email"], user_data["password"])
+
     with allure.step("Проверка, что возвращается статус-код 200"):
-        assert login_user.status_code == 200, f"Ожидался 200, но получен {login_user.status_code} - {login_user.text}"
+        assert response["status_code"] == 200, f"Ожидался 200, но получен {response['status_code']} - {response}"
 
     with allure.step("Проверка, что в ответе есть accessToken и user"):
-        response_json = login_user.json()
-        assert "accessToken" in response_json, "accessToken отсутствует в ответе"
-        assert "user" in response_json, "user отсутствует в ответе"
+        assert "accessToken" in response, "accessToken отсутствует в ответе"
+        assert "user" in response, "user отсутствует в ответе"
 
 
 @allure.feature("Пользователь")
@@ -24,9 +32,9 @@ def test_successful_login(login_user):
 @allure.title("Логин с неверным логином или паролем")
 @allure.description("Этот тест проверяет, что при неверных данных логина возвращается ошибка.")
 @pytest.mark.parametrize("email, password", [
-    ("wrong@example.com", "correctpass"),     # несуществующий email
-    ("", "correctpass"),                      # пустой email
-    ("valid@example.com", "wrongpass"),       # неправильный пароль
+    ("wrong@example.com", "correctpass"),  # несуществующий email
+    ("", "correctpass"),  # пустой email
+    ("valid@example.com", "wrongpass"),  # неправильный пароль
 ])
 def test_login_with_invalid_credentials(email, password):
     with allure.step("Отправка запроса с неправильными данными"):
