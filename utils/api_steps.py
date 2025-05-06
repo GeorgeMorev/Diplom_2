@@ -1,65 +1,73 @@
 import requests
 from config import APIUrls
+from data.test_data import TestData
 
 
 def register_user(user_data):
-    """
-    Регистрирует нового пользователя через API.
-    :param user_data: dict с полями email, password, name
-    :return: Response
-    """
-    return requests.post(APIUrls.REGISTER, json=user_data)
+    """Создаёт пользователя через API и возвращает ответ сервера вместе с запросом."""
+    resp = requests.post(APIUrls.REGISTER, json=user_data)
+    return {
+        "status_code": resp.status_code,
+        **resp.json(),
+        "request_body": user_data
+    }
 
 
-def login_user(email: str, password: str):
-    """
-    Авторизует пользователя через API.
-    :return: Response
-    """
-    return requests.post(APIUrls.LOGIN, json={"email": email, "password": password})
+def login_user(email, password):
+    """Авторизует пользователя, возвращает ответ сервера."""
+    resp = requests.post(APIUrls.LOGIN, json={
+        "email": email,
+        "password": password
+    })
+    return {
+        "status_code": resp.status_code,
+        **resp.json()
+    }
 
 
-def create_order(order_data: dict, token: str = None):
-    """
-    Создает заказ через API. Если передан token, кладет его в заголовок Authorization.
-    :param order_data: dict, например {"ingredients": [...]}
-    :param token: строка вида "Bearer xxx" или просто токен
-    :return: Response
-    """
-    headers = {}
-    if token:
-        # если токен уже содержит префикс "Bearer ", используем как есть
-        headers["Authorization"] = token if token.lower().startswith("bearer ") else f"Bearer {token}"
+def get_user_token(user_data):
+    """Регистрирует и логинит пользователя, возвращает accessToken."""
+    # регистрация
+    resp = requests.post(APIUrls.REGISTER, json=user_data)
+    if resp.status_code != 200:
+        return None
+    # логин
+    resp = requests.post(APIUrls.LOGIN, json={
+        "email": user_data["email"],
+        "password": user_data["password"]
+    })
+    if resp.status_code != 200:
+        return None
+    return resp.json().get("accessToken")
+
+
+def create_order_without_auth(order_data):
+    """Отправляет запрос на создание заказа без токена."""
+    return requests.post(APIUrls.ORDERS, json=order_data)
+
+
+def create_order_with_auth(order_data, token):
+    """Отправляет запрос на создание заказа с токеном авторизации."""
+    headers = {"Authorization": token}
     return requests.post(APIUrls.ORDERS, json=order_data, headers=headers)
 
 
-def get_orders(token: str = None):
-    """
-    Возвращает список заказов. Если передан токен, делает авторизованный запрос.
-    """
-    headers = {}
-    if token:
-        headers["Authorization"] = token if token.lower().startswith("bearer ") else f"Bearer {token}"
+def create_order_without_ingredients():
+    """Отправляет запрос на создание заказа без ингредиентов."""
+    return requests.post(APIUrls.ORDERS, json=TestData.EMPTY_ORDER_DATA)
+
+
+def create_order_with_invalid_ingredient():
+    """Отправляет запрос на создание заказа с несуществующим ингредиентом."""
+    return requests.post(APIUrls.ORDERS, json=TestData.INVALID_INGREDIENT_ORDER)
+
+
+def get_user_orders(token):
+    """Получает список заказов авторизованного пользователя."""
+    headers = {"Authorization": token}
     return requests.get(APIUrls.ORDERS, headers=headers)
 
 
-def update_user(field: str, value, token: str = None):
-    """
-    Изменяет одно поле пользователя через API.
-    :param field: имя поля ("email", "name" или "password")
-    :param value: новое значение
-    :param token: опционально токен авторизации
-    :return: Response
-    """
-    headers = {}
-    if token:
-        headers["Authorization"] = token if token.lower().startswith("bearer ") else f"Bearer {token}"
-    return requests.patch(APIUrls.USER, json={field: value}, headers=headers)
-
-
-def delete_user(token: str):
-    """
-    Удаляет текущего авторизованного пользователя.
-    """
-    headers = {"Authorization": token if token.lower().startswith("bearer ") else f"Bearer {token}"}
-    return requests.delete(APIUrls.USER, headers=headers)
+def get_orders_unauthorized():
+    """Получает список заказов без авторизации."""
+    return requests.get(APIUrls.ORDERS)
