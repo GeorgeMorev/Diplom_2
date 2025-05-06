@@ -81,3 +81,14 @@ def update_user_unauthorized(data):
 def create_user(user_data):
     """Создаёт нового пользователя (аналог register_user, но без возврата словаря)."""
     return requests.post(APIUrls.REGISTER, json=user_data)
+
+
+def update_user_authorized(token, data):
+    """Изменяет данные пользователя с авторизацией."""
+    headers = {"Authorization": token}
+    return requests.patch(APIUrls.USER, json=data, headers=headers)
+
+
+def update_user_unauthorized(data):
+    """Пытается изменить данные пользователя без авторизации."""
+    return requests.patch(APIUrls.USER, json=data)
