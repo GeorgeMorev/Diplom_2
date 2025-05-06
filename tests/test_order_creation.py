@@ -1,6 +1,4 @@
-import requests
 import allure
-from config import APIUrls, TestData
 
 
 @allure.feature("Заказы")
