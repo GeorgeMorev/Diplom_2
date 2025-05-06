@@ -71,3 +71,13 @@ def get_user_orders(token):
 def get_orders_unauthorized():
     """Получает список заказов без авторизации."""
     return requests.get(APIUrls.ORDERS)
+
+
+def update_user_unauthorized(data):
+    """Пытается изменить данные пользователя без авторизации."""
+    return requests.patch(APIUrls.USER, json=data)
+
+
+def create_user(user_data):
+    """Создаёт нового пользователя (аналог register_user, но без возврата словаря)."""
+    return requests.post(APIUrls.REGISTER, json=user_data)
