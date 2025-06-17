@@ -1,0 +1,1 @@
+Response: {"success":true,"accessToken":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MDE3MWE0OWVkMjgwMDAxYjVjYWNiMCIsImlhdCI6MTc0NDkyNTA5MiwiZXhwIjoxNzQ0OTI2MjkyfQ.hslcFxH6qpW63VuRxGR1rXxdFiCvwndi3BHDjfgr140","refreshToken":"ebef9bcfcea7b536738e4361e4ae6e95e65f9e2540bba245a72d76fc7b14ea54f63d4e7edfbbdb03","user":{"email":"bgriffin@example.com","name":"Billy"}}
